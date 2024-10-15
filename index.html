@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <title>PostX</title>
+    <style>
+          
+        .loader {
+            border: 1px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 8px dotted #092a41;
+            width: 55px;
+            height: 55px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+            /* Safari */
+            @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+            }
+
+            @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+            } 
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        /* Sidebar */
+        .history-bar {
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 750px;
+            background-color: #20232a;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .sidebar h2 {
+            color: #ffd54f;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ffd54f;
+            padding-bottom: 10px;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 10px 0;
+        }
+
+        /* .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px;
+            display: block;
+            background-color: #a5a5ab;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        } */
+
+        /* .sidebar ul li a:hover {
+            background-color: #61dafb;
+        } */
+
+        /* Styling for the history items */
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #e2e2e2;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+
+        .history-item a {
+            color: rgb(44, 37, 37);
+            text-decoration: none;
+            font-size: 14px;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        /* .history-item:hover {
+        background-color: #bee6f7;
+    } */
+
+        .delete-icon {
+            cursor: pointer;
+            color: #ffd54f;
+            font-size: 18px;
+        }
+
+        .delete-icon:hover {
+            color: #ff6b6b;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            background-color: #20232a;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 4px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #ffd54f;
+        }
+
+        /* Request Area */
+        .request-area {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .request-area select,
+        .request-area input,
+        .request-area button {
+            padding: 12px;
+            margin-right: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .request-area input {
+            width: 450px;
+            background-color: #fff;
+        }
+
+        .request-area button {
+            background-color: #ad8a14;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .request-area button:hover {
+            background-color: #17552f;
+            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Tabs Section */
+        .tabs {
+            margin-top: 20px;
+        }
+
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ddd;
+            margin-right: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: #61dafb;
+            color: rgb(80, 76, 76);
+        }
+
+        /* Panels */
+        .panel {
+            display: none;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+
+        .panel textarea {
+            width: 98%;
+            /* Full width of the panel */
+            height: 200px;
+            /* Set height to 200px or any height you prefer */
+            padding: 10px;
+            font-size: 14px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            resize: both;
+            /* Allows users to resize both vertically and horizontally */
+            overflow: auto;
+            /* Allows users to resize the textarea vertically if desired */
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .data-type {
+            display: inline-block;
+            padding: 5px 8px;
+            background-color: #cc9650;
+            margin: 0 40px 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .data-type .active {
+            background-color: #61dafb;
+            color: white;
+        }
+
+        .form-table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+
+        .form-table td {
+            padding: 10px;
+        }
+
+        .form-table input,
+        .form-table textarea {
+            width: 80%;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            border: 1px solid #1d6132;
+        }
+
+        #paramReplica,
+        #paramReplicaDel,
+        #HeaderReplica,
+        #HeaderReplicaDel {
+            margin: 15px;
+            background-color: #1d6132;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* Response Section */
+        .response-section {
+            margin-top: 20px;
+        }
+
+        .response-section textarea {
+            width: 98%;
+            /* Full width of the panel */
+            height: 200px;
+            /* Set height to 200px or any height you prefer */
+            padding: 10px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            resize: both;
+            /* Allows users to resize both vertically and horizontally */
+            overflow: auto;
+            /* Allows users to resize the textarea vertically if desired */
+        }
+
+        .response-section h2 {
+            margin-bottom: 10px;
+        }
+
+        #Resetdata {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #Resetdata:hover {
+            background-color: #ff4d4d;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar (History Tab) -->
+    <div class="loader" style="display:none;"></div>
+    <div class="history-bar">
+        <div class="sidebar">
+            <h2>History</h2>
+            <ul id="history-list">
+                <!-- Request history will appear here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>PostX</h1>
+            <button id="Resetdata">Reset</button>
+        </div>
+
+        <!-- Request Section -->
+        <div class="request-area">
+            <select id="method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+            </select>
+            <input type="text" id="url" placeholder="Enter request URL" />
+            <button id="sendRequestButton">Send</button>
+        </div>
+
+        <!-- Tabs (Headers, Params, Body, Auth) -->
+        <div class="tabs">
+            <span class="tab active" onclick="switchTab('params')">Params</span>
+            <span class="tab" onclick="switchTab('headers')">Headers</span>
+            <span class="tab" onclick="switchTab('body')">Body</span>
+            <span class="tab" onclick="switchTab('auth')">Auth</span>
+        </div>
+
+        <!-- Panels for Params, Headers, Body, Auth -->
+        <div id="params" class="panel active">
+            <h2>Params</h2>
+            <table class="form-table" id="params-td">
+                <tr>
+                    <td><input type="text" class="param-key-1" placeholder="Key" /></td>
+                    <td>
+                        <input type="text" class="param-value-1" placeholder="Value" />
+                    </td>
+                </tr>
+            </table>
+            <button id="paramReplica">+</button>
+            <button id="paramReplicaDel">-</button>
+        </div>
+
+        <div id="headers" class="panel">
+            <h2>Headers</h2>
+            <table class="form-table" id="header-td">
+                <tr>
+                    <td>
+                        <input type="text" class="header-key-1" placeholder="Key" />
+                    </td>
+                    <td>
+                        <input type="text" class="header-value-1" placeholder="Value" />
+                    </td>
+                </tr>
+            </table>
+            <button id="HeaderReplica">+</button>
+            <button id="HeaderReplicaDel">-</button>
+        </div>
+
+        <div id="body" class="panel">
+            <h2><span>Raw-Data</span></h2>
+            <span class="data-type" id="beautify">Beautify</span>
+            <textarea id="body-content" placeholder="Enter request body here..."></textarea>
+        </div>
+
+        <div id="auth" class="panel">
+            <h2>Select Auth Type</h2>
+            <table class="form-table">
+                <tr>
+                    <td>
+                        <select id="auth-type">
+                            <option value="none">None</option>
+                            <option value="basic">Basic Auth</option>
+                            <option value="bearer">Bearer Token</option>
+                            <option value="apiKey">API Key</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr id="auth-credentials">
+                    <td>
+                        <input type="text" id="auth-username" placeholder="Username" />
+                    </td>
+                    <td>
+                        <input type="password" id="auth-password" placeholder="Password" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Response Section -->
+        <div class="response-section">
+            <h2>Response</h2>
+            <span class="data-type" id="resbeautify">Beautify</span>
+            <textarea id="response" readonly></textarea>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify-html.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify-css.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let historyList = [];
+
+            const storedHistory = localStorage.getItem("history");
+            if (storedHistory) {
+                historyList = JSON.parse(storedHistory);
+                updateHistoryUI();
+            }
+
+            // Send Request
+            $("#sendRequestButton").on("click", async function () {
+                const method = $("#method").val();
+                const url = $("#url").val();
+
+                // Validation for method and URL
+                if (method == "") {
+                    alert("Kindly, Choose a method for the Request");
+                    return false;
+                }
+                if (url == "") {
+                    alert("Kindly, fill in the URL");
+                    return false;
+                }
+
+                const params = {};
+                const headers = {};
+
+                // Collect parameters and validate
+                for (let i = 1; i < paramCount; i++) {
+                    const paramKey = $(`.param-key-${i}`).val();
+                    const paramValue = $(`.param-value-${i}`).val();
+                    if (paramKey && paramValue) {
+                        params[paramKey] = paramValue;
+                    }
+                    if (paramKey != "" && paramValue == "") {
+                        alert(`Kindly, fill the value for the param ${paramKey}`);
+                        return false;
+                    }
+                    if (paramKey == "" && paramValue != "") {
+                        alert("Kindly, fill the key for the param");
+                        return false;
+                    }
+                }
+
+                // Collect headers and validate
+                for (let i = 1; i < headerCount; i++) {
+                    const headerKey = $(`.header-key-${i}`).val();
+                    const headerValue = $(`.header-value-${i}`).val();
+                    if (headerKey && headerValue) {
+                        headers[headerKey] = headerValue;
+                    }
+                    if (headerKey != "" && headerValue == "") {
+                        alert(`Kindly, fill the value for the header ${headerKey}`);
+                        return false;
+                    }
+                    if (headerKey == "" && headerValue != "") {
+                        alert("Kindly, fill the key for the header");
+                        return false;
+                    }
+                }
+
+                const bodyContent = $("#body-content").val();
+                const authtype = $("#auth-type").val();
+                const authUsername = $("#auth-username").val();
+                const authPassword = $("#auth-password").val();
+
+                if (bodyContent == "" && (method == "POST" || method == "PUT")) {
+                    alert("Kindly, fill body content for POST or PUT request");
+                    return false;
+                }
+                if (bodyContent != "" && method == "GET") {
+                    alert("Body content is not required for a GET request.");
+                    return false;
+                }
+
+                if (authUsername != "" && authPassword != "" && authtype == "") {
+                    alert("Kindly, Choose Auth-Type");
+                    return false;
+                }
+                if (authUsername != "" && authPassword == "") {
+                    alert("Kindly, fill in the auth-Password");
+                    return false;
+                }
+                if (authUsername == "" && authPassword != "") {
+                    alert("Kindly, fill in the auth-Username");
+                    return false;
+                }
+
+                
+                let apiurl = url;
+                if (Object.keys(params).length > 0) {
+                    const urlParams = new URLSearchParams(params).toString();
+                    apiurl += '?' + urlParams;
+                }
+
+                
+                const fetchOptions = {
+                    method: method,
+                    headers: new Headers(headers),
+                    redirect: 'follow'
+                };
+
+                // If basic auth is provided, append Authorization header
+                if (authtype === 'basic' && authUsername && authPassword) {
+                    const basicAuth = btoa(`${authUsername}:${authPassword}`);
+                    fetchOptions.headers.append('Authorization', 'Basic ' + basicAuth);
+                }
+
+                
+                if (method === 'POST' || method === 'PUT') {
+                    fetchOptions.body = bodyContent;
+
+                    
+                    if (bodyContent && JSON.parse(bodyContent)) {
+                        fetchOptions.headers.set('Content-Type', 'application/json');
+                    }
+                }
+                $(".loader").show();
+                try {
+                    const response = await fetch(apiurl, fetchOptions);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error("API Error:", errorText);
+                        alert("Error: Request Not Completed");
+                        $("#response").val(errorText);
+                        $(".loader").hide();                        
+                    } else {
+                        $(".loader").hide();
+                        const result = await response.json();
+                        console.log("API Response:", result);
+                        $("#response").val(JSON.stringify(result));
+
+                        const resp = JSON.stringify(result);
+                        const requestData = {
+                            method,
+                            url,
+                            params: params,
+                            headers: headers,
+                            body: bodyContent,
+                            resp: resp,
+                            auth: {
+                                authtype: authtype,
+                                username: authUsername,
+                                password: authPassword,
+                            },
+                        };
+
+
+                        historyList.push(requestData);
+                        localStorage.setItem("history", JSON.stringify(historyList));
+                        updateHistoryUI();
+                    }
+                } catch (error) {
+                    console.error("Network Error:", error);
+                    alert("Network Error: " + error.message);
+                }
+            });
+
+
+            function updateHistoryUI() {
+                const historyUl = $("#history-list");
+                historyUl.empty();
+
+                historyList.forEach((request, index) => {
+                    const li = $("<li></li>").html(`
+                    <span class="history-item">
+                        <a href="#" onclick="loadHistory(${index})">${request.method
+                        } - ${request.url.substring(12, 25) + "..."}</a>
+                        <i onclick="deleteHistory(${index})" class="fa fa-trash-o delete-icon" style="font-size:24px;color:red"></i>
+                    </span>
+                `);
+                    historyUl.append(li);
+                });
+            }
+
+            window.deleteHistory = function (index) {
+                historyList.splice(index, 1);
+                localStorage.setItem("history", JSON.stringify(historyList));
+                updateHistoryUI();
+            };
+
+            window.loadHistory = function (index) {
+                const requestData = historyList[index];
+
+                $("#method").val(requestData.method);
+                $("#url").val(requestData.url);
+
+                const paramKeys = Object.keys(requestData.params);
+                const paramValues = Object.values(requestData.params);
+
+                for (let i = 0; i < paramKeys.length; i++) {
+                    $(`.param-key-${i + 1}`).val(paramKeys[i]);
+                    $(`.param-value-${i + 1}`).val(paramValues[i]);
+                }
+
+                const headerKeys = Object.keys(requestData.headers);
+                const headerValues = Object.values(requestData.headers);
+                for (let i = 0; i < headerKeys.length; i++) {
+                    $(`.header-key-${i + 1}`).val(headerKeys[i]);
+                    $(`.header-value-${i + 1}`).val(headerValues[i]);
+                }
+
+                $("#body-content").val(requestData.body);
+                $("#response").val(requestData.resp);
+                $("#auth-type").val(requestData.auth.authtype);
+                $("#auth-username").val(requestData.auth.username);
+                $("#auth-password").val(requestData.auth.password);
+            };
+
+            window.switchTab = function (tabId) {
+                $(".tab").removeClass("active");
+                $(".panel").removeClass("active");
+                $(`#${tabId}`).addClass("active");
+                $(`.tab[onclick="switchTab('${tabId}')"]`).addClass("active");
+            };
+
+            let paramCount = 2;
+            $("#paramReplica").on("click", function () {
+                var paramsTable = $("#params-td").first();
+                var newRow = $("<tr></tr>");
+                var keyCell = $("<td></td>").append(
+                    `<input type="text" class="param-key-${paramCount}" placeholder="Key">`
+                );
+                var valueCell = $("<td></td>").append(
+                    `<input type="text" class="param-value-${paramCount}" placeholder="Value">`
+                );
+                newRow.append(keyCell).append(valueCell);
+                paramsTable.append(newRow);
+                paramCount++;
+            });
+
+            $("#paramReplicaDel").on("click", function () {
+                var paramsTable = $("#params-td").first();
+                if (paramsTable.find("tr").length > 1) {
+                    paramsTable.find("tr:last").remove();
+                    paramCount--;
+                }
+            });
+
+            let headerCount = 2;
+            $("#HeaderReplica").on("click", function () {
+                var headerTable = $("#header-td").first();
+                var newRow = $("<tr></tr>");
+                var keyCell = $("<td></td>").append(
+                    `<input type="text" class="param-key-${headerCount}" placeholder="Key">`
+                );
+                var valueCell = $("<td></td>").append(
+                    `<input type="text" class="param-value-${headerCount}" placeholder="Value">`
+                );
+                newRow.append(keyCell).append(valueCell);
+                headerTable.append(newRow);
+                headerCount++;
+            });
+
+            $("#HeaderReplicaDel").on("click", function () {
+                var headerTable = $("#header-td").first();
+                if (headerTable.find("tr").length > 1) {
+                    headerTable.find("tr:last").remove();
+                    headerCount--;
+                }
+            });
+        });
+
+        document
+            .getElementById("beautify")
+            .addEventListener("click", function () {
+                let rawData = document.getElementById("body-content").value.trim();
+
+                if (isJSON(rawData)) {
+                    let beautifiedData = js_beautify(
+                        JSON.stringify(JSON.parse(rawData), null, 4),
+                        { indent_size: 4 }
+                    );
+                    document.getElementById("body-content").value = beautifiedData;
+                } else if (isXML(rawData)) {
+                    let beautifiedData = js_beautify.html(rawData, { indent_size: 4 });
+                    document.getElementById("body-content").value = beautifiedData;
+                } else {
+                    if ($("#body-content").val() != "") {
+                        alert(
+                            "Cannot determine format to beautify. Make sure the input is valid JSON, XML, or XSD."
+                        );
+                    }
+                }
+            });
+
+        document
+            .getElementById("resbeautify")
+            .addEventListener("click", function () {
+                let rawres = document.getElementById("response").value.trim();
+
+                if (isJSON(rawres)) {
+                    let beautifiedrawres = js_beautify(
+                        JSON.stringify(JSON.parse(rawres), null, 4),
+                        { indent_size: 4 }
+                    );
+                    document.getElementById("response").value = beautifiedrawres;
+                } else if (isXML(rawres)) {
+                    let beautifiedrawres = js_beautify.html(rawres, { indent_size: 4 });
+                    document.getElementById("response").value = beautifiedrawres;
+                } else {
+                    if ($("#response").val() != "") {
+                        alert(
+                            "Cannot determine format to beautify. Make sure the input is valid JSON, XML, or XSD."
+                        );
+                    }
+                }
+            });
+
+        function isJSON(data) {
+            try {
+                JSON.parse(data);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function isXML(data) {
+            const parser = new DOMParser();
+            const parsedXML = parser.parseFromString(data, "application/xml");
+            return parsedXML.getElementsByTagName("parsererror").length === 0;
+        }
+
+        $("#Resetdata").on("click", function () {
+            $("#method").val("");
+            $("#url").val("");
+            $("#body-content").val("");
+            $("#auth-type").val("");
+            $("#auth-username").val("");
+            $("#auth-password").val("");
+            $("#response").val("");
+
+            for (let i = 1; i < paramCount; i++) {
+                $(`.param-key-${i}`).val("");
+                $(`.param-value-${i}`).val("");
+            }
+
+            for (let i = 1; i < headerCount; i++) {
+                $(`.header-key-${i}`).val("");
+                $(`.header-value-${i}`).val("");
+            }
+        });
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+
+</html>
